@@ -1,0 +1,37 @@
+<h1>"Argument list too long" error when passing a find output as arguments</h1>
+<p>I have some 5 million text files under a directory - all of the same format (nothing special, just plain text files with some integers in each line). I would like to compute the maximum and minimum line count amongst all these files, along with its two filenames (the one for max and another for min).</p>
+<p>I started out by trying to write out all the line count like so (and then workout how to find the min and max from this list):</p>
+<pre><code>wc -l `find /some/data/dir/with/text/files/ -type f` &gt; report.txt
+</code></pre>
+<p>but this throws me an error:</p>
+<blockquote>
+<p>bash: /usr/bin/wc: Argument list too long</p>
+</blockquote>
+<p>Perhaps there is a better way to go about this?</p>
+<h2>1 Answer</h2>
+<p>There is a <a href="https://stackoverflow.com/a/4185165/4375327">limit</a> to the argument list length. Since you have several millions files passed to wc, the command certainly crossed this line.</p>
+<p>Better invoke <code>find -exec COMMAND</code> instead:</p>
+<pre><code>find /some/data/dir/with/text/files/ -type f -exec wc -l {} + &gt; report.txt
+</code></pre>
+<p>Here, each found file <code>find</code> will be appended to the argument list of the command following <code>-exec</code> in place of <code>{}</code>. Before the argument length is reached, the command is run and the remaining found files will be processed in a new run of the command the same way, until the whole list is done.</p>
+<p>See <a href="https://linux.die.net/man/1/find" rel="nofollow noreferrer">man page</a> of <code>find</code> for more details.</p>
+<hr>
+<p><em>Thanks to <a href="https://stackoverflow.com/users/14122/charles-duffy">Charles Duffy</a> for the improvements of this answer.</em></p>
+<h2>Your Answer</h2>
+<p>Sign up or <a href="/users/login?ssrc=question_page&amp;returnurl=https%3a%2f%2fstackoverflow.com%2fquestions%2f64110022%2fargument-list-too-long-error-when-passing-a-find-output-as-arguments%23new-answer" id="login-link">log in</a></p>
+<button class="google-login" data-ga='["sign up","Sign Up Started - Google","New Post",null,null]'>Sign up using Google</button>
+<button class="stackexchange-login" data-ga='["sign up","Sign Up Navigation","New Post",null,null]'>Sign up using Email and Password</button>
+<h3>Post as a guest</h3>
+<label for="display-name">Name</label>
+<input type="text" id="display-name" name="display-name" maxlength="30" value="" tabindex="105" placeholder="">
+<label for="m-address">Email</label>
+<p>Required, but never shown</p>
+<input type="text" class="js-post-email-field" id="m-address" name="m-address" value="" size="40" tabindex="106" placeholder="">
+<button type="submit" tabindex="120" autocomplete="off" id="submit-button">Post Your Answer</button>
+<button class="discard-answer">Discard</button>
+<p>By clicking “Post Your Answer”, you agree to our <a href="https://stackoverflow.com/legal/terms-of-service/public" name="tos" target="_blank" class="-link">terms of service</a> and acknowledge you have read our <a href="https://stackoverflow.com/legal/privacy-policy" name="privacy" target="_blank" class="-link">privacy policy</a>.</p>
+<h2>Not the answer you're looking for? Browse other questions tagged 
+<a href="/questions/tagged/python" class="post-tag" aria-labelledby="tag-python-tooltip-container" title="show questions tagged 'python'" aria-label="show questions tagged 'python'" rel="tag">python</a> 
+<a href="/questions/tagged/bash" class="post-tag" aria-labelledby="tag-bash-tooltip-container" title="show questions tagged 'bash'" aria-label="show questions tagged 'bash'" rel="tag">bash</a> 
+<a href="/questions/tagged/wc" class="post-tag" aria-labelledby="tag-wc-tooltip-container" title="show questions tagged 'wc'" aria-label="show questions tagged 'wc'" rel="tag">wc</a> 
+or <a href="/questions/ask">ask your own question</a>.</h2>
