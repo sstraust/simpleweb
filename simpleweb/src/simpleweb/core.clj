@@ -13,10 +13,7 @@
    :body "Success!"})
 
 
-(defn- write-simplified-url [{{:keys [url]} :params}]
-  {:status 200
-   :headers {"Content-Type" "text/html"}
-   :body (compute-simple-page/simplify-url url)})
+
 
 
 (defn- simplify-page-contents [{{:keys [contents]} :params}]
@@ -34,18 +31,19 @@
 
 (defroutes routes
   (POST "/simplifyHTML" params (simplify-page-contents params))
-  (POST "/simplifyURL" params (write-simplified-url params))
   (GET "/test" params (test-output params)))
 
 (defonce ^:private web-server (atom nil))
+(def ^:private port 8131)
 (defn run-web-server []
   (when (not (nil? @web-server))
     (.stop @web-server))
   (reset! web-server (ring/run-jetty
                       (wrap-params (wrap-keyword-params routes))
-                      {:port 8131
+                      {:port port
                        :join? false
-                       :headerBufferSize 1048576})))
+                       :headerBufferSize 1048576}))
+  (println "running server on port " (str port)))
 
 (defn -main []
   (run-web-server))

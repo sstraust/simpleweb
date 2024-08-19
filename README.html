@@ -13,41 +13,25 @@
 <body>
 
 <h1>SimpleWeb</h1>
-<p>An Emacs package that <strong>simplifies web pages</strong>, so <strong>they render correctly</strong> in the <ins>Emacs Web Browser</ins></p>
+<p>An Emacs package that <strong>simplifies web pages</strong>, so they <strong>render correctly</strong> in the <strong><ins>Emacs Web Browser</ins></strong></p>
 <h2>Why Do I Need This?</h2>
 <p>Emacs is a text-based editor, but the modern web isn't very text-based. Javascript, visual applications, it's all too much and I don't like it.</p>
 <p>This package uses machine learning to translate modern HTML into the much older style of the 1990s. <em>Simple</em> HTML with <em>simple</em>, well labeled tags, that load well in the emacs browser.</p>
 <h2>Installation Instructions</h2>
 <h4>Clone The Repository</h4>
-<p><code>git clone https://github.com/sstraust/simpleweb.git</code></p>
+<p><code>mkdir -p ~/.emacs.d &amp;&amp; cd $_
+git clone https://github.com/sstraust/simpleweb.git</code></p>
 <h4>Install Python Dependencies</h4>
 <p><code>sudo apt install python3-pip
 pip install openai
 pip install google-generativeai
-pip install selenium
 pip install --upgrade requests</code></p>
-<h4>Install Firefox and Gecko Driver</h4>
-<p>sudo apt install firefox</p>
-<h5>I had to do this workaround for ubuntu</h5>
-<p>https://askubuntu.com/questions/1399383/how-to-install-firefox-as-a-traditional-deb-package-without-snap-in-ubuntu-22</p>
-<p>```
-sudo snap remove firefox
-sudo add-apt-repository ppa:mozillateam/ppa
-echo '
-Package: *
-Pin: release o=LP-PPA-mozillateam
-Pin-Priority: 1001</p>
-<p>Package: firefox
-Pin: version 1:1snap*
-Pin-Priority: -1
-' | sudo tee /etc/apt/preferences.d/mozilla-firefox
-sudo apt install firefox
-```</p>
 <h4>Add your GEMINI API key</h4>
-<p>add 
-<code>(setenv "GEMINI_API_KEY" "your_api_key")</code>
+<p><code>(setenv "GEMINI_API_KEY" "your_api_key")</code>
 to your .emacs file</p>
 <h4>Turn on the Library</h4>
-<p>Load <code>process_url.el</code>, and then call <code>(simpleweb-initialize)</code> from your .emacs file</p>
+<p>Add the following to your .emacs file:
+<code>(add-to-list 'load-path "~/.emacs.d/simpleweb")
+(simpleweb-initialize)</code></p>
 </body>
 </html>
