@@ -11,7 +11,19 @@
 
 (def ^:private gemini-model (genai/GenerativeModel "models/gemini-1.5-pro-latest"))
 
-(def ^:private web-driver (webdriver/Firefox))
+(def MODE (atom :prod))
+
+(defn create-web-driver []
+  (let [opts (webdriver/FirefoxOptions)
+        profile (webdriver/FirefoxProfile)]
+    (when (not (= @MODE :dev))
+      (py/py. opts add_argument "--headless"))
+    (py/set-attr! opts "profile" profile)
+    (webdriver/Firefox :options opts)))
+
+(def ^:private web-driver (create-web-driver))
+
+
 
 (defn- get-page-source [url]
   (py/py. web-driver get url)
