@@ -1,6 +1,11 @@
 # SimpleWeb
-Simplify the Web!
+SimpleWeb simplifies web pages, so that the render correctly in the _Emacs Web Browser_
 
+## Why Do I Need This?
+
+Emacs is a text-based editor, but the modern web isn't very text-based. Javascript, visual applications, it's all too much and I don't like it.
+
+This project uses machine learning to translate modern HTML into the much older style of the 1990s. _Simple_ HTML with _simple_, well labeled tags, that load well in the emacs browser.
 
 ## Installation Instructions
 #### Clone The Repository
