@@ -1,19 +1,26 @@
 {
-  :deps {
-         org.clojure/clojure {:mvn/version "1.11.1"}
-         environ/environ {:mvn/version "1.2.0"}
-         ring/ring {:mvn/version "1.11.0-RC1"}
-         ring/ring-jetty-adapter {:mvn/version "1.11.0-RC1"}
-         org.ring-clojure/ring-websocket-protocols {:mvn/version "1.11.0-RC1"}
-         compojure/compojure {:mvn/version "1.4.0"}
-         me.raynes/conch {:mvn/version "0.8.0"}
-         org.clojure/data.json {:mvn/version "2.4.0"}
-         io.github.sstraust/easyreagent {:git/url "https://github.com/sstraust/easyreagent.git"
-                                         :git/sha "2c629f149089b19f731fa37c28835e6915d8f09c"
-                                         :deps/root "server"}
-         clj-time/clj-time {:mvn/version "0.15.2"}
-         hiccup/hiccup {:mvn/version "1.0.5"}
-         clj-python/libpython-clj {:mvn/version "2.025"}
-         com.taoensso/tufte {:mvn/version "2.3.0"}
-         }
+ :deps {
+        org.clojure/clojure {:mvn/version "1.11.1"}
+        environ/environ {:mvn/version "1.2.0"}
+        ring/ring {:mvn/version "1.11.0-RC1"}
+        ring/ring-jetty-adapter {:mvn/version "1.11.0-RC1"}
+        org.ring-clojure/ring-websocket-protocols {:mvn/version "1.11.0-RC1"}
+        compojure/compojure {:mvn/version "1.4.0"}
+        me.raynes/conch {:mvn/version "0.8.0"}
+        org.clojure/data.json {:mvn/version "2.4.0"}
+        io.github.sstraust/easyreagent {:git/url "https://github.com/sstraust/easyreagent.git"
+                                        :git/sha "2c629f149089b19f731fa37c28835e6915d8f09c"
+                                        :deps/root "server"}
+        clj-time/clj-time {:mvn/version "0.15.2"}
+        hiccup/hiccup {:mvn/version "1.0.5"}
+        clj-python/libpython-clj {:mvn/version "2.025"}
+        com.taoensso/tufte {:mvn/version "2.3.0"}
+        }
+ :aliases {
+           :uberdeps {
+                      :replace-deps {uberdeps/uberdeps {:mvn/version "1.4.0"}}
+                      :replace-paths []
+                      :main-opts ["-m" "uberdeps.uberjar"]
+                      }
+           }
  }

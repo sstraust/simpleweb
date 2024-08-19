@@ -1,33 +1,35 @@
 (ns simpleweb.core
   (:require [compojure.core :refer [defroutes GET POST]]
             [ring.adapter.jetty :as ring]
-            [hiccup.page :refer [include-js include-css html5]]
-            [easyreagentserver.core :as er-server]
             [ring.middleware.keyword-params :refer [wrap-keyword-params]]
             [ring.middleware.params :only [wrap-params] :refer [wrap-params]]
-            [clojure.data.json :as json]
-            [simpleweb.compute-simple-page :as compute-simple-page]))
+            [simpleweb.compute-simple-page :as compute-simple-page])
+  (:gen-class))
 
-(defn test-output [params]
+
+(defn- test-output [_]
   {:status 200
    :headers {"Content-Type" "text/html"}
    :body "Success!"})
 
-(defn write-simplified-url [{{:keys [url]} :params}]
+
+(defn- write-simplified-url [{{:keys [url]} :params}]
   {:status 200
    :headers {"Content-Type" "text/html"}
    :body (compute-simple-page/simplify-url url)})
 
-(comment
-  (compute-simple-page/simplify-page-contents "hi")
-  )
 
-(defn simplify-page-contents [{{:keys [contents]} :params}]
-  (println "recieved request with content: " (count contents))
-  (let [output (compute-simple-page/simplify-page-contents contents)]
-    (println output)
-    output)
-  )
+(defn- simplify-page-contents [{{:keys [contents]} :params}]
+  (try 
+    (println "recieved request with content: " (count contents))
+    (let [output (compute-simple-page/simplify-page-contents contents)]
+      (println output)
+      output)
+    (catch Exception e
+      (println "error!!: " e)
+      {:status 500
+       :headers {}
+       :body (str "simplifyweb failed with exception " e)})))
   
 
 (defroutes routes
@@ -35,7 +37,7 @@
   (POST "/simplifyURL" params (write-simplified-url params))
   (GET "/test" params (test-output params)))
 
-(defonce web-server (atom nil))
+(defonce ^:private web-server (atom nil))
 (defn run-web-server []
   (when (not (nil? @web-server))
     (.stop @web-server))
@@ -44,5 +46,8 @@
                       {:port 8131
                        :join? false
                        :headerBufferSize 1048576})))
+
+(defn -main []
+  (run-web-server))
 
 ;; (run-web-server)

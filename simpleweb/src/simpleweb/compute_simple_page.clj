@@ -1,9 +1,7 @@
 (ns simpleweb.compute-simple-page
   (:require [libpython-clj2.python :as py]
-            [clojure.java.io :as io]
-            [taoensso.tufte :as tufte :refer (defnp p profiled profile)]
-            [libpython-clj2.require :refer [require-python]])
-  (:use [clojure.java.shell :only [sh]]))
+            [taoensso.tufte :as tufte :refer (p profile)]
+            [libpython-clj2.require :refer [require-python]]))
 
 (require-python 'openai)
 (require-python '[google.generativeai :as genai])
@@ -11,11 +9,11 @@
 
 (genai/configure  :api_key (System/getenv "GEMENI_API_KEY"))
 
-(def gemini-model (genai/GenerativeModel "models/gemini-1.5-pro-latest"))
+(def ^:private gemini-model (genai/GenerativeModel "models/gemini-1.5-pro-latest"))
 
-(def web-driver (webdriver/Firefox))
+(def ^:private web-driver (webdriver/Firefox))
 
-(defn get-page-source [url]
+(defn- get-page-source [url]
   (py/py. web-driver get url)
   (Thread/sleep 1200)
   (let [remove-scripts-js "
@@ -26,13 +24,13 @@
     (py/py. web-driver execute_script remove-scripts-js))
   (py/py.- web-driver page_source))
 
-(defn simplify-page-prompt []
+(defn- simplify-page-prompt []
   (str "Act as a professional software engineer. Convert the following HTML into a simpler html code that will be understandable by eww. Make sure you preserve all important forms, buttons, and information. There is no CSS, so make sure that elements are properly labeled (things that should be headers are h1, h2, h3, things that should be paragraphs have <p> tags, etc.). Focus on the content of the page, rather than headers or extraneous info. Return only the html contents of the site. Return it as raw text and do not quote the output:\n"))
 
-(defn rand-file-name []
+(defn- rand-file-name []
   (str "resources/file_url" (rand-int 10000) (rand-int 10000) ".html"))
 
-(defn rand-file-id []
+(defn- rand-file-id []
   (str "file_id" (rand-int 10000) (rand-int 10000)))
 
 (defn simplify-page-contents [page-source]

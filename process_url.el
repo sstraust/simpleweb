@@ -56,7 +56,7 @@
   "Simplify the contents of a webpage in the current buffer."
   (let* ((html-contents (buffer-substring (point-min) (point-max)))
 	 (active-buffer (current-buffer)))
-    (simplify-html-page
+    (simpleweb--simplify-html-page
      html-contents
      (lambda (simplified-html)
        (with-current-buffer active-buffer
@@ -64,6 +64,14 @@
 	   (goto-char start)
 	   (delete-region start end)
 	   (insert simplified-html)))))))
+
+(setq simple-web-jar-file "/Users/sam/sstraust/simpleweb2/simpleweb/target/simpleweb.jar")
+(defun simpleweb-initialize ()
+  (interactive)
+  (start-process "simplify-web process" "*simplify-web-server*"
+		 "java" "-cp" simple-web-jar-file "clojure.main" "-m" "simpleweb.core")
+  (advice-add 'eww--preprocess-html :after #'simpleweb-simplify-html-advice-hook))
+  
 
 ;; (advice-add 'eww--preprocess-html :after #'simplify-html-advice-hook)
 ;; (advice-unadvice 'eww--preprocess-html)
