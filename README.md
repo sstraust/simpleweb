@@ -1,5 +1,5 @@
 # SimpleWeb
-Simpleweb is an Emacs package that **simplifies web pages**, so **they render correctly in the Emacs Web Browser**
+An Emacs package that **simplifies web pages**, so **they render correctly** in the <u>Emacs Web Browser</u>
 
 ## Why Do I Need This?
 
