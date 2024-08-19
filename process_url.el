@@ -65,19 +65,15 @@
 	   (delete-region start end)
 	   (insert simplified-html)))))))
 
-(setq simpleweb-curr-filepath
-      (find-lisp-object-file-name #'simpleweb-simplify-html-advice-hook 'defun))
-
-
-(setq simple-web-jar-file
-      (concat (file-name-directory simpleweb-curr-filepath)
-	      "simpleweb/target/simpleweb.jar"))
 
 (defun simpleweb-initialize ()
   (interactive)
-  (start-process "simplify-web process" "*simplify-web-server*"
-		 "java" "-cp" simple-web-jar-file "clojure.main" "-m" "simpleweb.core")
-  (advice-add 'eww--preprocess-html :after #'simpleweb-simplify-html-advice-hook))
+  (let* ((simpleweb-curr-filepath (find-lisp-object-file-name #'simpleweb-simplify-html-advice-hook 'defun))
+	(simpleweb-jar-file (concat (file-name-directory simpleweb-curr-filepath)
+				    "simpleweb/target/simpleweb.jar")))
+    (start-process "simplify-web process" "*simplify-web-server*"
+		   "java" "-cp" simpleweb-jar-file "clojure.main" "-m" "simpleweb.core")
+    (advice-add 'eww--preprocess-html :after #'simpleweb-simplify-html-advice-hook)))
 
 
 

@@ -1,6 +1,8 @@
 # SimpleWeb
 An Emacs package that **simplifies web pages**, so they **render correctly** in the **<ins>Emacs Web Browser</ins>**
 
+![Example Results](https://github.com/sstraust/simpleweb/blob/master/DemoScreenshot.png)
+
 ## Why Do I Need This?
 
 Emacs is a text-based editor, but the modern web isn't very text-based. Javascript, visual applications, it's all too much and I don't like it.
