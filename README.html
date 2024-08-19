@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<title>README.html</title>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+
+</head>
+
+<body>
+
+<h1>SimpleWeb</h1>
+<p>Simplify the Web!</p>
+<h2>Installation Instructions</h2>
+<h4>Clone The Repository</h4>
+<p><code>git clone https://github.com/sstraust/simpleweb.git</code></p>
+<h4>Install Python Dependencies</h4>
+<p><code>sudo apt install python3-pip
+pip install openai
+pip install google-generativeai
+pip install selenium
+pip install --upgrade requests</code></p>
+<h4>Install Firefox and Gecko Driver</h4>
+<p>sudo apt install firefox</p>
+<h5>I had to do this workaround for ubuntu</h5>
+<p>https://askubuntu.com/questions/1399383/how-to-install-firefox-as-a-traditional-deb-package-without-snap-in-ubuntu-22</p>
+<p>```
+sudo snap remove firefox
+sudo add-apt-repository ppa:mozillateam/ppa
+echo '
+Package: *
+Pin: release o=LP-PPA-mozillateam
+Pin-Priority: 1001</p>
+<p>Package: firefox
+Pin: version 1:1snap*
+Pin-Priority: -1
+' | sudo tee /etc/apt/preferences.d/mozilla-firefox
+sudo apt install firefox
+```</p>
+<h4>Add your GEMINI API key</h4>
+<p>add 
+<code>(setenv "GEMINI_API_KEY" "your_api_key")</code>
+to your .emacs file</p>
+<h4>Turn on the Library</h4>
+<p>Load <code>process_url.el</code>, and then call <code>(simpleweb-initialize)</code> from your .emacs file</p>
+</body>
+</html>

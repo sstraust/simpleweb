@@ -75,3 +75,4 @@
 
 ;; (advice-add 'eww--preprocess-html :after #'simplify-html-advice-hook)
 ;; (advice-unadvice 'eww--preprocess-html)
+;; eww--preprocess-html
