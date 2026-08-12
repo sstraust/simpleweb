@@ -99,11 +99,6 @@
 (defun simpleweb--display-html-advice (orig charset url &rest args)
   (let ((target-buffer (current-buffer))
         (start (point)))
-    (message "url!!")
-    (setq z3 url)
-    (message url)
-    (message (eww-current-url))
-    (message "url2")
     (simpleweb--simplify-html-page-scripting
      url
      (lambda (custom)

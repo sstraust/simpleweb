@@ -1,17 +1,12 @@
 (ns simpleweb.compute-page-with-scripting
   (:require
    [clojure.java.io :as io]
+   [clojure.string :as string]
    [etaoin.api :as et]
-   [libpython-clj2.python :as py]
-   [libpython-clj2.require :refer [require-python]]))
+   [simpleweb.llm-util :as llm-util]))
 
 (def driver (et/firefox))
-
-(require-python '[google.generativeai :as genai])
-
-(genai/configure  :api_key (System/getenv "GEMINI_API_KEY"))
-
-(def ^:private gemini-model (genai/GenerativeModel "models/gemini-3.1-pro-preview"))
+(def generated-programs-base-dir "generated_programs")
 
 
 (defn- simplify-page-program-prompt []
@@ -47,73 +42,49 @@ Detailed instructions:
 :\n"))
 
 
-(require '[clojure.java.shell :as shell])
-  
-  (defn- llm-chat [prompt]
-    (let [{:keys [exit out err]}
-          (shell/sh "/Users/sam/.local/bin/claude" "-p"
-                    "--model" "opus"
-                    "--output-format" "text"
-
-                    "--tools" ""
-                    :in prompt          ; stdin — page sources are too big for argv
-                    :out-enc "UTF-8")]  ; without this, non-ASCII comes back mangled
-      (if (zero? exit)
-        out         
-        (throw (ex-info (str "claude failed: " err) {:exit exit})))))
-
-
-;; (defn- llm-chat [prompt]
-;;   (let [model-output (py/py. gemini-model generate_content
-;;                              [prompt])]
-;;     (py/py.- model-output text)))
 
 (defn- extract-js-program [llm-output]
   (second (re-find #"(?is)source code:(.+)" llm-output)))
 
 
-(defn simplify-page-contents-program [page-source]
+(defn- simplify-page-contents-program [page-source]
   (extract-js-program
-   (llm-chat (str (simplify-page-program-prompt) page-source))))
+   (llm-util/llm-chat (str (simplify-page-program-prompt) page-source))))
 
-(defn simplify-page-contents-matcher-program [page-source js-contents]
+(defn- simplify-page-contents-matcher-program [page-source js-contents]
   (extract-js-program
-   (llm-chat (str (simplify-page-matcher-program-prompt) page-source js-contents))))
+   (llm-util/llm-chat (str (simplify-page-matcher-program-prompt) page-source js-contents))))
 
-(defn sanitize-to-filename [s]
-  (clojure.string/replace s #"[^A-Za-z0-9_]" "_"))
+(defn- sanitize-to-filename [s]
+  (string/replace s #"[^A-Za-z0-9_]" "_"))
 
-(defn sanitized-top-level-domain [url]
+(defn- sanitized-top-level-domain [url]
   (sanitize-to-filename (.getHost (java.net.URI. url))))
 
-(comment 
-  (sanitized-top-level-domain "https://www.reddit.com/r/landscaping/comments/1vksgg8/so_my_neighbor_isnt_thrilled/")
-  "www_reddit_com")
+(defn- top-level-path [url]
+  (io/file generated-programs-base-dir (sanitized-top-level-domain url)))
 
-(defn truncate [s size]
+(defn- truncate [s size]
   (subs s 0 (min size (count s))))
   
 
-(defn sanitized-path [url]
+(defn- sanitized-path [url]
   (truncate (sanitize-to-filename url) 150))
 
-(comment
-  (sanitized-path "https://www.reddit.com/r/landscaping/comments/1vksgg8/so_my_neighbor_isnt_thrilled/")
-  "https___www_reddit_com_r_landscaping_comments_1vksgg8_so_my_neighbor_isnt_thrilled_"
-  )
+(defn- filter-first [pred x]
+  (first (filter pred x)))
 
 (defn matcher-matches? [matcher-file]
   (when (.exists matcher-file)
-    (et/js-execute driver (str "return " (clojure.string/trim (slurp matcher-file))))))
+    (et/js-execute driver (str "return " (string/trim (slurp matcher-file))))))
 
 (defn lookup-modifier-program [best-matching-dir]
   (slurp (io/file best-matching-dir "modifier.js")))
 
-
   
 
-(defn write-matcher-program-to-disk [url matcher-program modifier-program]
-  (let [top-level-path (sanitized-top-level-domain url)
+(defn- write-matcher-program-to-disk [url matcher-program modifier-program]
+  (let [top-level-path (top-level-path url)
         subpath (sanitized-path url)
         matcher-path (io/file top-level-path subpath "matcher.js")
         modifier-path (io/file top-level-path subpath "modifier.js")]
@@ -121,11 +92,8 @@ Detailed instructions:
     (spit matcher-path matcher-program)
     (spit modifier-path modifier-program)))
 
-(defn filter-first [pred x]
-  (first (filter pred x)))
 
-
-(defn get-new-program-for-source [url page-source]
+(defn- get-new-program-for-source [url page-source]
   (let [modifier-program (simplify-page-contents-program page-source)
         matcher-program (simplify-page-contents-matcher-program
                          page-source modifier-program)]
@@ -133,8 +101,8 @@ Detailed instructions:
     modifier-program))
 
 ;; note that this assumes the file is pointed at the current URL. you should assert this
-(defn get-best-matching-modifier-program [url page-source]
-  (let [top-level-path (sanitized-top-level-domain url)
+(defn- get-best-matching-modifier-program [url page-source]
+  (let [top-level-path (top-level-path url)
         subpath (sanitized-path url)
         
         ;; always look up the current path first
@@ -145,8 +113,6 @@ Detailed instructions:
         best-matching-dir (filter-first (fn [x] (matcher-matches?
                                                  (io/file x "matcher.js")))
                                         dirs-to-lookup)]
-    ;; (def bb dirs-to-lookup)
-    ;; (def zz best-matching-dir)
     (if best-matching-dir
       (lookup-modifier-program best-matching-dir)
       (get-new-program-for-source url page-source))))
