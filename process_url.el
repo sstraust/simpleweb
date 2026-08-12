@@ -10,7 +10,7 @@
 	(url-request-extra-headers `(("Content-Type" . "application/x-www-form-urlencoded")))
 	(url-request-data (concat "url=" input-url)))
     (with-current-buffer
-	(url-retrieve-synchronously "http://localhost:8131/simplifyURL")
+	(url-retrieve-synchronously "http://localhost:8132/simplifyURL")
       (goto-char (point-min))
       (re-search-forward "^$")
       (delete-region (point) (point-min))
@@ -42,7 +42,7 @@
    It uses a callback
    (simplified-html: String) --> Void
    to access the simplified HTML"
-  (request "http://localhost:8131/simplifyHTML"
+  (request "http://localhost:8132/simplifyHTML"
     :data (list (cons "contents" html-contents))
     :sync t
     :type "POST"
@@ -66,6 +66,58 @@
 	   (insert simplified-html)))))))
 
 
+(defun simpleweb--simplify-html-page-scripting (url callback)
+  "Simplify the contents of a webpage. This BLOCKS until the simplification returns.
+
+   Takes a string representing an html response as input, and
+   simplifies the HTML. 
+   It uses a callback
+   (simplified-html: String) --> Void
+   to access the simplified HTML"
+  (request "http://localhost:8132/simplifyWithScripting"
+    :data (list (cons "url" url))
+    :sync t
+    :type "POST"
+    :parser 'buffer-string
+    :success (cl-function
+	      (lambda (&key data &allow-other-keys)
+		(when data
+		  (funcall callback data))))))
+
+;; (defun simpleweb--display-html-advice (orig charset url &rest args)
+;;   ;; point..point-max currently holds the fetched HTML source.
+;;   ;; Replace it with your custom source, keyed off URL, then hand
+;;   ;; control back to EWW so it parses & renders your version.
+;;   (simpleweb--simplify-html-page-scripting
+;;    url
+;;    (lambda (custom)
+;;     (when custom
+;;       (delete-region (point) (point-max))
+;;       (insert custom)))
+;;   (apply orig charset url args)))
+
+(defun simpleweb--display-html-advice (orig charset url &rest args)
+  (let ((target-buffer (current-buffer))
+        (start (point)))
+    (message "url!!")
+    (setq z3 url)
+    (message url)
+    (message (eww-current-url))
+    (message "url2")
+    (simpleweb--simplify-html-page-scripting
+     url
+     (lambda (custom)
+       (with-current-buffer target-buffer
+         (when custom
+           (delete-region start (point-max))
+           (goto-char start)
+           (insert custom)
+	   (goto-char start))
+         (apply orig charset url args))))))
+
+
+
+
 (defun simpleweb-initialize ()
   (interactive)
   (let* ((simpleweb-curr-filepath (find-lisp-object-file-name #'simpleweb-simplify-html-advice-hook 'defun))
@@ -81,4 +133,6 @@
 
 ;; (advice-add 'eww--preprocess-html :after #'simplify-html-advice-hook)
 ;; (advice-unadvice 'eww--preprocess-html)
+;; (advice-add 'eww-display-html :around #'simpleweb--display-html-advice)
+;; (advice-unadvice 'eww-display-html)
 ;; eww--preprocess-html
