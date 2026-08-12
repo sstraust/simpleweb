@@ -24,3 +24,6 @@ pom.xml.asc
 .cpcache/
 resources/
 #.*
+\.#.*
+\.projectile
+tmp/
