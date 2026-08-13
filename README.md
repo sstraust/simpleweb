@@ -35,3 +35,6 @@ Add the following to your .emacs file:
 (add-to-list 'load-path "~/.emacs.d/simpleweb")
 (simpleweb-initialize)
 ```
+
+### Changelog
+- 8/12/26 add tooling for program generation

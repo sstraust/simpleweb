@@ -3,7 +3,8 @@
             [ring.adapter.jetty :as ring]
             [ring.middleware.keyword-params :refer [wrap-keyword-params]]
             [ring.middleware.params :only [wrap-params] :refer [wrap-params]]
-            [simpleweb.compute-simple-page :as compute-simple-page])
+            [simpleweb.compute-simple-page :as compute-simple-page]
+            [simpleweb.compute-page-with-scripting :as compute-page-with-scripting])
   (:gen-class))
 
 
@@ -27,14 +28,30 @@
       {:status 500
        :headers {}
        :body (str "simplifyweb failed with exception " e)})))
+
+(defn- simplify-with-scripting [{{:keys [url]} :params :as params}]
+  (try
+    (let [output (compute-page-with-scripting/simplify-url url)]
+      (do (println output)
+          output))
+    (catch Exception e
+      (println "error!!: " e)
+      {:status 500
+       :headers {}
+       :body (str "simplifyweb failed with exception " e)})
+  ))
+
+
   
 
-(defroutes routes
-  (POST "/simplifyHTML" params (simplify-page-contents params))
+(defroutes
+ routes
+ (POST "/simplifyHTML" params (simplify-page-contents params))
+ (POST "/simplifyWithScripting" params (simplify-with-scripting params))
   (GET "/test" params (test-output params)))
 
 (defonce ^:private web-server (atom nil))
-(def ^:private port 8131)
+(def ^:private port 8132)
 (defn run-web-server []
   (when (not (nil? @web-server))
     (.stop @web-server))
