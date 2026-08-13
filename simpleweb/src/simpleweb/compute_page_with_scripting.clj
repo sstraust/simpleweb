@@ -5,7 +5,7 @@
    [etaoin.api :as et]
    [simpleweb.llm-util :as llm-util]))
 
-(def driver (et/firefox))
+(def driver (delay (et/firefox)))
 (def generated-programs-base-dir "generated_programs")
 
 
@@ -76,7 +76,7 @@ Detailed instructions:
 
 (defn matcher-matches? [matcher-file]
   (when (.exists matcher-file)
-    (et/js-execute driver (str "return " (string/trim (slurp matcher-file))))))
+    (et/js-execute @driver (str "return " (string/trim (slurp matcher-file))))))
 
 (defn lookup-modifier-program [best-matching-dir]
   (slurp (io/file best-matching-dir "modifier.js")))
@@ -119,9 +119,9 @@ Detailed instructions:
 
   
 (defn simplify-url [url]
-  (et/go driver url)
+  (et/go @driver url)
   (et/wait 0.15)
-  (let [modifier-program (get-best-matching-modifier-program url (et/get-source driver))]
-    (et/js-execute driver modifier-program)
+  (let [modifier-program (get-best-matching-modifier-program url (et/get-source @driver))]
+    (et/js-execute @driver modifier-program)
     (et/wait 0.05)
-    (et/get-source driver)))
+    (et/get-source @driver)))

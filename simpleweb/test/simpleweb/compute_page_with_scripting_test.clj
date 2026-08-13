@@ -6,7 +6,7 @@
 (def test-data-dir "test/tmp/simplewebtestdata")
 
 (defn test-directory-fixture [f]
-  (fs/delete-tree test-directory-fixture)
+  (fs/delete-tree test-data-dir)
   (f))
 
 (use-fixtures :each test-directory-fixture)
