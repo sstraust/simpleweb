@@ -38,7 +38,3 @@ Add the following to your .emacs file:
 
 ### Changelog
 - 8/12/26 add tooling for program generation
-<<<<<<< HEAD
-
-=======
->>>>>>> db767160c6d008d261aaca15466e76c8ae867261
