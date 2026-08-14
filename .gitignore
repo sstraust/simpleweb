@@ -25,3 +25,4 @@ resources/
 \.projectile
 tmp/
 simpleweb/generated_programs
+.*.el~
