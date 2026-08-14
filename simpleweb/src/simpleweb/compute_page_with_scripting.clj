@@ -148,7 +148,6 @@ Detailed instructions:
   (process-background-queue-once background-generate-modifier-queue background-driver)
   (et/go @live-user-driver url)
   (et/wait 0.15)
-  (println "here!")
   (let [modifier-program (get-best-matching-modifier-program url live-user-driver)
         modifier-program (or modifier-program
                            (if (use-background-queue)
