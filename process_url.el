@@ -78,7 +78,11 @@
     :data (list (cons "url" url))
     :sync t
     :type "POST"
-    :parser 'buffer-string
+    :parser (lambda ()
+	      (json-parse-buffer :object-type 'alist
+				 :array-type 'list
+				 :null-object nil
+				 :false-object nil))
     :success (cl-function
 	      (lambda (&key data &allow-other-keys)
 		(when data
@@ -101,12 +105,15 @@
         (start (point)))
     (simpleweb--simplify-html-page-scripting
      url
-     (lambda (custom)
+     (lambda (server-response)
        (with-current-buffer target-buffer
-         (when custom
+         (when (alist-get 'modified-page-source server-response)
            (delete-region start (point-max))
            (goto-char start)
-           (insert custom)
+	   (let ((v (alist-get 'program-directory server-response))) 
+	       (message "%S len=%d" v (length v)))
+	   (insert (string-trim (alist-get 'program-directory server-response)))
+           (insert (alist-get 'modified-page-source server-response))
 	   (goto-char start))
          (apply orig charset url args))))))
 
