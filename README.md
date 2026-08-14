@@ -15,8 +15,6 @@ Hot off the press! you can't afford to miss these!
 
 Instead of using raw LLMs to operate on a page's source, you can now generate a _program_ that operates on the page's source.
 
-this functionality is experimental, and I'm still working on cleaning it up a bit more and making it more user-friendly.
-
 In practice, I've found this to be both a faster browsing experience, and produce more accurate output. I had been planning to do this for a long time, but only recently found that the current class of models were producing good enough output.
 
 
