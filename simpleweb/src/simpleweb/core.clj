@@ -4,7 +4,8 @@
             [ring.middleware.keyword-params :refer [wrap-keyword-params]]
             [ring.middleware.params :only [wrap-params] :refer [wrap-params]]
             [simpleweb.compute-simple-page :as compute-simple-page]
-            [simpleweb.compute-page-with-scripting :as compute-page-with-scripting])
+            [simpleweb.compute-page-with-scripting :as compute-page-with-scripting]
+            [clojure.data.json :as json])
   (:gen-class))
 
 
@@ -33,7 +34,7 @@
   (try
     (let [output (compute-page-with-scripting/simplify-url url)]
       (do ;; (println output)
-          output))
+          (json/write-str output)))
     (catch Exception e
       (println "error!!: " e)
       {:status 500

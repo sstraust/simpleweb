@@ -124,7 +124,8 @@ Detailed instructions:
                                                   (catch Exception e false)))
                                         dirs-to-lookup)]
     (when best-matching-dir
-      (lookup-modifier-program best-matching-dir))))
+      {:program-contents (lookup-modifier-program best-matching-dir)
+       :program-directory best-matching-dir})))
 
 ;; TODO rename main driver to something else
 (defn process-background-queue [queue driver]
@@ -152,8 +153,10 @@ Detailed instructions:
         modifier-program (or modifier-program
                            (if (use-background-queue)
                              (do (clojure.core.async/offer! background-generate-modifier-queue url)
-                                 "")
+                                 {:program-contents ""
+                                  :program-directory nil})
                              (generate-new-program-for-source url (et/get-source @live-user-driver))))]
-    (et/js-execute @live-user-driver modifier-program)
+    (et/js-execute @live-user-driver (:program-contents modifier-program))
     (et/wait 0.05)
-    (et/get-source @live-user-driver)))
+    {:program-directory (str (:program-directory modifier-program))
+     :modified-page-source (et/get-source @live-user-driver)}))
