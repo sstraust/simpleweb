@@ -69,6 +69,14 @@ Add the following to your .emacs file:
 (simpleweb-initialize-program-generation)
 ```
 
+you will also need firefox with geckodriver
+
+debugging: if things don't happen the way you expect them to
+check the ```*Messages*``` and the ```*simplify-web-server*``` buffer.
+
+This is a new feature that's still a little unpolished/I haven't carefully written setup docs for it yet
+so feel free to reach out directly if you have any problems getting it up and running.
+
 
 
 ### Changelog
