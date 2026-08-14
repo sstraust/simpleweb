@@ -26,7 +26,8 @@ Warnings:
 Notes:
 - The modifications do not take effect the first time you visit a new type of page. If there isn't a modifier already generated, we load the page as-normal, and then use a background queue to generate the modifier program. We do this because it takes a long time for the program to generate. The next time you visit the page after generation, the changes should take effect.
 - This spins up 2 firefox drivers, 1 for live browsing, and 1 for program generation. You can look at them to see what they are doing, but if you close them it will mess things up.
-- Each generated program lives in simpleweb/generated_programs. If there's something you don't like, you can always delete it and regenerate it
+- Each generated program lives in simpleweb/generated_programs. If there's something you don't like, you can always delete it and regenerate it. It's sometimes worth iterating a few times for sites you frequently visit.
+- It takes a moment for the webserver to start up after you first open emacs. You may need to wait 10seconds after you first open emacs to be able to start browsing.
   
 
 
