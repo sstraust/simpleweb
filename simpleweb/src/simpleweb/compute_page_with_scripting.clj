@@ -8,7 +8,7 @@
 
 (def live-user-driver (delay (et/firefox)))
 
-(def background-driver (delay et/firefox))
+(def background-driver (delay (et/firefox)))
 (def background-generate-modifier-queue (chan (sliding-buffer 10)))
 
 (def generated-programs-base-dir "generated_programs")
@@ -117,9 +117,11 @@ Detailed instructions:
                                (filter #(.isDirectory %)
                                        (.listFiles (io/file top-level-path))))
         
-        best-matching-dir (filter-first (fn [x] (matcher-matches?
-                                                 driver
-                                                 (io/file x "matcher.js")))
+        best-matching-dir (filter-first (fn [x] (try
+                                                  (matcher-matches?
+                                                   driver
+                                                   (io/file x "matcher.js"))
+                                                  (catch Exception e false)))
                                         dirs-to-lookup)]
     (when best-matching-dir
       (lookup-modifier-program best-matching-dir))))
@@ -129,21 +131,24 @@ Detailed instructions:
   (clojure.core.async/go-loop []
     (when-some [url (<! queue)]
       (try
-        (let [page-source (et/go @driver url)]
+        (et/go @driver url)
+        (let [page-source (et/get-source @driver)]
           (when (not (get-best-matching-modifier-program url driver))
-            (generate-new-program-for-source url page-source))
-           (finally
-             (recur)))))))
+            (generate-new-program-for-source url page-source)))
+        (catch Exception e
+          (println e)
+          nil))
+      (recur))))
 (def process-background-queue-once (memoize process-background-queue))
 
-      
-  
+
 
   
 (defn simplify-url [url]
-  (process-background-queue-once)
+  (process-background-queue-once background-generate-modifier-queue background-driver)
   (et/go @live-user-driver url)
   (et/wait 0.15)
+  (println "here!")
   (let [modifier-program (get-best-matching-modifier-program url live-user-driver)
         modifier-program (or modifier-program
                            (if (use-background-queue)

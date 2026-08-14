@@ -2,113 +2,111 @@
 (function () {
   'use strict';
 
-  function ok(x) { return !!x; }
-
   try {
     if (typeof document === 'undefined' || !document || !document.documentElement) return false;
+    if (!document.body) return false;
 
-    // ---------- 1. Origin / identity signals ----------
-    var host = '';
-    try { host = (location && location.hostname) ? location.hostname.toLowerCase() : ''; } catch (e) { host = ''; }
-    var hostIsReddit = /(^|\.)reddit\.com$/.test(host);
+    function attr(el, name) {
+      if (!el) return '';
+      var v = el.getAttribute(name);
+      return v == null ? '' : String(v).trim();
+    }
 
-    var canonical = document.querySelector('link[rel="canonical"]');
-    var canonicalHref = canonical ? String(canonical.getAttribute('href') || '') : '';
-    var canonicalIsReddit = /^https?:\/\/([a-z0-9-]+\.)?reddit\.com/i.test(canonicalHref);
+    function all(sel, root) {
+      try {
+        return Array.prototype.slice.call((root || document).querySelectorAll(sel));
+      } catch (e) {
+        return [];
+      }
+    }
 
-    var siteMeta = document.querySelector('meta[property="og:site_name"]');
-    var siteIsReddit = siteMeta && /reddit/i.test(String(siteMeta.getAttribute('content') || ''));
+    function isRedditHost(host) {
+      if (!host) return false;
+      host = String(host).toLowerCase();
+      return host === 'reddit.com' || host.slice(-11) === '.reddit.com';
+    }
 
-    // Must look like Reddit by at least one strong signal.
-    if (!hostIsReddit && !canonicalIsReddit && !siteIsReddit) return false;
+    function hostOf(url) {
+      if (!url) return '';
+      try { return new URL(url, 'https://www.reddit.com').hostname; } catch (e) { return ''; }
+    }
 
-    // If we do know the host and it isn't reddit.com, bail out.
-    if (host && !hostIsReddit) return false;
+    /* ---- 1. The document must belong to reddit.com ---- */
+    var redditDoc = false;
 
-    // ---------- 2. Shreddit app shell ----------
+    try {
+      if (typeof location !== 'undefined' && location && isRedditHost(location.hostname)) redditDoc = true;
+    } catch (e) { /* ignore */ }
+
+    if (!redditDoc) {
+      var canonical = document.querySelector('link[rel~="canonical"]');
+      if (canonical && isRedditHost(hostOf(attr(canonical, 'href')))) redditDoc = true;
+    }
+    if (!redditDoc) {
+      var og = document.querySelector('meta[property="og:url"]');
+      if (og && isRedditHost(hostOf(attr(og, 'content')))) redditDoc = true;
+    }
+    if (!redditDoc) {
+      var site = document.querySelector('meta[property="og:site_name"]');
+      if (site && attr(site, 'content').toLowerCase() === 'reddit') redditDoc = true;
+    }
+    if (!redditDoc) return false;
+
+    /* ---- 2. Must be the shreddit application shell ---- */
     var app = document.querySelector('shreddit-app');
-    if (!ok(app)) return false;
+    if (!app) return false;
 
-    // ---------- 3. Must be a FEED page, not a post/comments page ----------
+    /* ---- 3. Must be a feed/listing page, not a post-detail or search page ---- */
+    var pageType = attr(app, 'pagetype').toLowerCase();
+    var badPageTypes = ['post_detail', 'postdetail', 'comments', 'search', 'search_results',
+                        'profile', 'settings', 'inbox', 'chat', 'submit', 'wiki', 'modqueue'];
+    for (var b = 0; b < badPageTypes.length; b++) {
+      if (pageType === badPageTypes[b]) return false;
+    }
+
     var feed = document.querySelector('shreddit-feed');
-    if (!ok(feed)) return false;
+    if (!feed) return false;
 
-    // Comment trees / single-post detail pages are a different layout.
-    if (document.querySelector('shreddit-comment-tree')) return false;
-    if (document.querySelector('shreddit-comment')) return false;
-    if (document.querySelector('comment-body-header')) return false;
+    /* A rendered comment tree means this is a post-detail page, not a feed. */
+    if (document.querySelector('shreddit-comment-tree') || document.querySelector('shreddit-comment')) {
+      return false;
+    }
 
-    // Search results pages have a different post component set.
-    if (document.querySelector('search-telemetry-tracker')) return false;
-    if (document.querySelector('shreddit-search-results')) return false;
+    /* ---- 4. Posts must expose the attributes the modifier reads ---- */
+    var posts = all('shreddit-post');
+    if (posts.length < 2) return false;
 
-    // The modifier only understands feeds rendered as a list of shreddit-post
-    // elements inside the main content area.
-    var main = document.getElementById('main-content');
-    if (!ok(main)) return false;
-
-    // ---------- 4. Posts: the core data source ----------
-    var posts = document.querySelectorAll('shreddit-post');
-    if (!posts || posts.length < 3) return false;
-
-    var usable = 0;
+    var validTotal = 0;
+    var validInFeed = 0;
     var withSubreddit = 0;
-    var withAuthor = 0;
-    var withScore = 0;
-    var withComments = 0;
-    var withCreated = 0;
-    var withType = 0;
-    var permalinkOk = 0;
+    var withMeta = 0;
 
     for (var i = 0; i < posts.length; i++) {
       var p = posts[i];
-      var title = p.getAttribute('post-title');
-      var permalink = p.getAttribute('permalink');
+      var title = attr(p, 'post-title');
+      var permalink = attr(p, 'permalink');
+      if (!title || !permalink) continue;
 
-      if (!title || !String(title).trim()) continue;
-      usable++;
+      validTotal++;
 
-      if (permalink && /^\/(r|user)\//.test(String(permalink))) permalinkOk++;
-      if (p.getAttribute('subreddit-prefixed-name')) withSubreddit++;
-      if (p.getAttribute('author')) withAuthor++;
-      if (p.getAttribute('score') !== null && !isNaN(parseInt(p.getAttribute('score'), 10))) withScore++;
-      if (p.getAttribute('comment-count') !== null && !isNaN(parseInt(p.getAttribute('comment-count'), 10))) withComments++;
-      if (p.getAttribute('created-timestamp')) withCreated++;
-      if (p.getAttribute('post-type')) withType++;
+      if (attr(p, 'subreddit-prefixed-name')) withSubreddit++;
+      if (attr(p, 'author') && (attr(p, 'comment-count') || attr(p, 'score'))) withMeta++;
+
+      try {
+        if (feed.contains(p)) validInFeed++;
+      } catch (e) { /* ignore */ }
     }
 
-    // Need a solid majority of posts carrying the attributes the modifier reads.
-    if (usable < 3) return false;
-    if (permalinkOk < Math.ceil(usable * 0.8)) return false;
-    if (withSubreddit < Math.ceil(usable * 0.8)) return false;
-    if (withAuthor < Math.ceil(usable * 0.8)) return false;
-    if (withScore < Math.ceil(usable * 0.8)) return false;
-    if (withComments < Math.ceil(usable * 0.8)) return false;
-    if (withCreated < Math.ceil(usable * 0.8)) return false;
-    if (withType < Math.ceil(usable * 0.8)) return false;
+    /* Enough well-formed posts, and the bulk of the posts on the page are well-formed. */
+    if (validTotal < 2) return false;
+    if (validTotal < Math.ceil(posts.length / 2)) return false;
 
-    // ---------- 5. Feed sort dropdown (feed-specific control) ----------
-    var sortDropdown = document.querySelector('shreddit-sort-dropdown[sort-event="feed-sort-change"]');
-    if (!ok(sortDropdown)) return false;
-    var sortItems = sortDropdown.querySelectorAll('[slot="dropdown-items"] a[href]');
-    if (!sortItems || sortItems.length < 2) return false;
+    /* The posts must actually live inside the feed container. */
+    if (validInFeed < 2) return false;
 
-    // ---------- 6. Legal / navigation links used for the toolbar ----------
-    var legal = document.querySelectorAll('.legal-links a[href]');
-    if (!legal || legal.length < 3) return false;
-
-    // ---------- 7. Text-body extraction path still present ----------
-    // At least one text post should expose its body via the expected slot,
-    // OR there should be no text posts at all in this feed.
-    var textPosts = 0;
-    var textPostsWithSlot = 0;
-    for (var j = 0; j < posts.length; j++) {
-      if (posts[j].getAttribute('post-type') === 'text') {
-        textPosts++;
-        if (posts[j].querySelector('[slot="text-body"]')) textPostsWithSlot++;
-      }
-    }
-    if (textPosts > 0 && textPostsWithSlot === 0) return false;
+    /* Credit-bar data (subreddit / author / counts) must be broadly available. */
+    if (withSubreddit < 2 || withSubreddit * 2 < validTotal) return false;
+    if (withMeta < 2 || withMeta * 2 < validTotal) return false;
 
     return true;
   } catch (err) {
