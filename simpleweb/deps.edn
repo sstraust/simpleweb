@@ -15,7 +15,8 @@
         hiccup/hiccup {:mvn/version "1.0.5"}
         clj-python/libpython-clj {:mvn/version "2.025"}
         com.taoensso/tufte {:mvn/version "2.3.0"}
-        etaoin {:mvn/version "1.0.40"}
+        org.clojure/core.async {:mvn/version "1.9.865"}
+                etaoin {:mvn/version "1.0.40"}
         babashka/fs {:mvn/version "0.5.34"}
         }
  :aliases {

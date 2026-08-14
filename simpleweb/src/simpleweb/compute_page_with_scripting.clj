@@ -3,11 +3,17 @@
    [clojure.java.io :as io]
    [clojure.string :as string]
    [etaoin.api :as et]
+   [clojure.core.async :refer [chan sliding-buffer <!]]
    [simpleweb.llm-util :as llm-util]))
 
-(def driver (delay (et/firefox)))
+(def live-user-driver (delay (et/firefox)))
+
+(def background-driver (delay (et/firefox)))
+(def background-generate-modifier-queue (chan (sliding-buffer 10)))
+
 (def generated-programs-base-dir "generated_programs")
 
+(defn use-background-queue [] true)
 
 (defn- simplify-page-program-prompt []
   (str "Act as a professional software engineer. Write a javascript program that converts the following HTML into a web 1.0 style website. It should keep the main page contents, and usability-wise should feel just the same as what you would see viewing it in the web browser. Everything after the text 'source code:\n' should be the program. It should be such that I can concatenate the original page source with the new javascript, and open it in a web browser.
@@ -74,7 +80,7 @@ Detailed instructions:
 (defn- filter-first [pred x]
   (first (filter pred x)))
 
-(defn matcher-matches? [matcher-file]
+(defn matcher-matches? [driver matcher-file]
   (when (.exists matcher-file)
     (et/js-execute @driver (str "return " (string/trim (slurp matcher-file))))))
 
@@ -93,7 +99,7 @@ Detailed instructions:
     (spit modifier-path modifier-program)))
 
 
-(defn- get-new-program-for-source [url page-source]
+(defn- generate-new-program-for-source [url page-source]
   (let [modifier-program (simplify-page-contents-program page-source)
         matcher-program (simplify-page-contents-matcher-program
                          page-source modifier-program)]
@@ -101,7 +107,8 @@ Detailed instructions:
     modifier-program))
 
 ;; note that this assumes the file is pointed at the current URL. you should assert this
-(defn- get-best-matching-modifier-program [url page-source]
+;; returns nil if no dir found
+(defn- get-best-matching-modifier-program [url driver]
   (let [top-level-path (top-level-path url)
         subpath (sanitized-path url)
         
@@ -110,18 +117,43 @@ Detailed instructions:
                                (filter #(.isDirectory %)
                                        (.listFiles (io/file top-level-path))))
         
-        best-matching-dir (filter-first (fn [x] (matcher-matches?
-                                                 (io/file x "matcher.js")))
+        best-matching-dir (filter-first (fn [x] (try
+                                                  (matcher-matches?
+                                                   driver
+                                                   (io/file x "matcher.js"))
+                                                  (catch Exception e false)))
                                         dirs-to-lookup)]
-    (if best-matching-dir
-      (lookup-modifier-program best-matching-dir)
-      (get-new-program-for-source url page-source))))
+    (when best-matching-dir
+      (lookup-modifier-program best-matching-dir))))
+
+;; TODO rename main driver to something else
+(defn process-background-queue [queue driver]
+  (clojure.core.async/go-loop []
+    (when-some [url (<! queue)]
+      (try
+        (et/go @driver url)
+        (let [page-source (et/get-source @driver)]
+          (when (not (get-best-matching-modifier-program url driver))
+            (generate-new-program-for-source url page-source)))
+        (catch Exception e
+          (println e)
+          nil))
+      (recur))))
+(def process-background-queue-once (memoize process-background-queue))
+
+
 
   
 (defn simplify-url [url]
-  (et/go @driver url)
+  (process-background-queue-once background-generate-modifier-queue background-driver)
+  (et/go @live-user-driver url)
   (et/wait 0.15)
-  (let [modifier-program (get-best-matching-modifier-program url (et/get-source @driver))]
-    (et/js-execute @driver modifier-program)
+  (let [modifier-program (get-best-matching-modifier-program url live-user-driver)
+        modifier-program (or modifier-program
+                           (if (use-background-queue)
+                             (do (clojure.core.async/offer! background-generate-modifier-queue url)
+                                 "")
+                             (generate-new-program-for-source url (et/get-source @live-user-driver))))]
+    (et/js-execute @live-user-driver modifier-program)
     (et/wait 0.05)
-    (et/get-source @driver)))
+    (et/get-source @live-user-driver)))

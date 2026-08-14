@@ -21,7 +21,7 @@
   (try 
     (println "recieved request with content: " (count contents))
     (let [output (compute-simple-page/simplify-page-contents contents)]
-      (println output)
+      ;; (println output)
       output)
     (catch Exception e
       (println "error!!: " e)
@@ -32,7 +32,7 @@
 (defn- simplify-with-scripting [{{:keys [url]} :params :as params}]
   (try
     (let [output (compute-page-with-scripting/simplify-url url)]
-      (do (println output)
+      (do ;; (println output)
           output))
     (catch Exception e
       (println "error!!: " e)
