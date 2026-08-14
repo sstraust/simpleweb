@@ -18,7 +18,7 @@
     (is
      (=
       "https___www_reddit_com_r_landscaping_comments_1vksgg8_so_my_neighbor_isnt_thrilled_"
-      (#'sanitized-path
+      (#'simpleweb.compute-page-with-scripting/sanitized-path
        "https://www.reddit.com/r/landscaping/comments/1vksgg8/so_my_neighbor_isnt_thrilled/")))))
 
 
@@ -27,7 +27,7 @@
    (is
     (=
      "www_reddit_com"
-     (#'sanitized-top-level-domain
+     (#'simpleweb.compute-page-with-scripting/sanitized-top-level-domain
       "https://www.reddit.com/r/landscaping/comments/1vksgg8/so_my_neighbor_isnt_thrilled/"))))
 
 
@@ -37,8 +37,8 @@
       ;; TODO use a proper DI framework
       (with-redefs [simpleweb.compute-page-with-scripting/generated-programs-base-dir test-data-dir
                     simpleweb.compute-page-with-scripting/matcher-matches? (fn [& args] true)]
-        (#'write-matcher-program-to-disk
+        (#'simpleweb.compute-page-with-scripting/write-matcher-program-to-disk
          example-url "test_matcher_program" "test_modifier_program")
-        (is (= (#'get-best-matching-modifier-program
+        (is (= (#'simpleweb.compute-page-with-scripting/get-best-matching-modifier-program
                 example-url "unused-page-source")
                "test_modifier_program"))))))
