@@ -129,6 +129,15 @@
 		   "java" "-cp" simpleweb-jar-file "clojure.main" "-m" "simpleweb.core")
     (advice-add 'eww--preprocess-html :after #'simpleweb-simplify-html-advice-hook)))
 
+(defun simpleweb-initialize-program-generation ()
+  (interactive)
+  (let* ((simpleweb-curr-filepath (find-lisp-object-file-name #'simpleweb-simplify-html-advice-hook 'defun))
+	(simpleweb-jar-file (concat (file-name-directory simpleweb-curr-filepath)
+				    "simpleweb/target/simpleweb.jar")))
+    (start-process "simplify-web process" "*simplify-web-server*"
+		   "java" "-cp" simpleweb-jar-file "clojure.main" "-m" "simpleweb.core")
+    (advice-add 'eww-display-html :around #'simpleweb--display-html-advice)))
+
 
 
 
@@ -138,3 +147,5 @@
 ;; (advice-add 'eww-display-html :around #'simpleweb--display-html-advice)
 ;; (advice-unadvice 'eww-display-html)
 ;; eww--preprocess-html
+;; (simpleweb-initialize-program-generation)
+(provide 'simpleweb-process-url)

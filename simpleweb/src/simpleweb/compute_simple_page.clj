@@ -3,7 +3,7 @@
             [taoensso.tufte :as tufte :refer (p profile)]
             [libpython-clj2.require :refer [require-python]]))
 
-(require-python 'openai)
+;; (require-python 'openai)
 (require-python '[google.generativeai :as genai])
 
 (genai/configure  :api_key (System/getenv "GEMINI_API_KEY"))

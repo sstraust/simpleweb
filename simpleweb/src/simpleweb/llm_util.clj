@@ -14,7 +14,7 @@
 (defmethod llm-chat ::claude-cli
   [prompt]
   (let [{:keys [exit out err]}
-        (shell/sh "/Users/sam/.local/bin/claude" "-p"
+        (shell/sh (System/getenv "CLAUDE_CLI_PATH") "-p"
                   "--model" "opus"
                   "--output-format" "text"
                   

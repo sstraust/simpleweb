@@ -11,7 +11,7 @@
 (def background-driver (delay (et/firefox)))
 (def background-generate-modifier-queue (chan (sliding-buffer 10)))
 
-(def generated-programs-base-dir "generated_programs")
+(def generated-programs-base-dir "simpleweb/generated_programs")
 
 (defn use-background-queue [] true)
 
