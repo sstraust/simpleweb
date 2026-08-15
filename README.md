@@ -62,12 +62,21 @@ Add the following to your .emacs file:
 #### Make sure Claude CLI is available, and set the CLI path
 (setenv "CLAUDE_CLI_PATH" "path to your claude")
 
+you will also need to install firefox and [geckodriver](https://github.com/mozilla/geckodriver/releases)
 
 Add the following to your .emacs file:
 ```
 (add-to-list 'load-path "~/.emacs.d/simpleweb")
 (simpleweb-initialize-program-generation)
 ```
+
+It takes a few seconds (10 or so) after emacs starts up before the server is ready.
+
+#### Debugging
+debugging: if things don't happen the way you expect them to
+check the ```*Messages*``` and the ```*simplify-web-server*``` buffer.
+
+This is a new feature that's still a little unpolished, so feel free to reach out directly if you have any problems getting it up and running.
 
 
 
