@@ -1,4 +1,13 @@
 ;;; -*- lexical-binding: t -*-
+(defcustom simpleweb-is-disabled nil
+  "If true, simpleweb will be disabled even if it is initialized."
+  :group 'simpleweb
+  :type 'boolean)
+
+(defun simpleweb-disable ()
+  (interactive)
+  (setq simpleweb-is-disabled (not simpleweb-is-disabled)))
+
 (defun simpleweb-preprocess-url (input-url)
   "Takes a URL as input, and returns a file location as output.
 
@@ -54,16 +63,18 @@
 
 (defun simpleweb-simplify-html-advice-hook (start end)
   "Simplify the contents of a webpage in the current buffer."
-  (let* ((html-contents (buffer-substring (point-min) (point-max)))
-	 (active-buffer (current-buffer)))
-    (simpleweb--simplify-html-page
-     html-contents
-     (lambda (simplified-html)
-       (with-current-buffer active-buffer
-	 (save-excursion 
-	   (goto-char start)
-	   (delete-region start end)
-	   (insert simplified-html)))))))
+  (if simpleweb-is-disabled
+      (apply orig charset url args)
+    (let* ((html-contents (buffer-substring (point-min) (point-max)))
+	   (active-buffer (current-buffer)))
+      (simpleweb--simplify-html-page
+       html-contents
+       (lambda (simplified-html)
+	 (with-current-buffer active-buffer
+	   (save-excursion 
+	     (goto-char start)
+	     (delete-region start end)
+	     (insert simplified-html))))))))
 
 
 (defun simpleweb--simplify-html-page-scripting (url callback)
@@ -88,36 +99,38 @@
 		(when data
 		  (funcall callback data))))))
 
-;; (defun simpleweb--display-html-advice (orig charset url &rest args)
-;;   ;; point..point-max currently holds the fetched HTML source.
-;;   ;; Replace it with your custom source, keyed off URL, then hand
-;;   ;; control back to EWW so it parses & renders your version.
-;;   (simpleweb--simplify-html-page-scripting
-;;    url
-;;    (lambda (custom)
-;;     (when custom
-;;       (delete-region (point) (point-max))
-;;       (insert custom)))
-;;   (apply orig charset url args)))
+
+(defun simpleweb--display-html-advice-helper (orig charset url &rest args)
+  (let ((target-buffer (current-buffer))
+          (start (point)))
+      (simpleweb--simplify-html-page-scripting
+       url
+       (lambda (server-response)
+	 (with-current-buffer target-buffer
+           (when (alist-get 'modified-page-source server-response)
+             (delete-region start (point-max))
+             (goto-char start)
+	     (let ((v (alist-get 'program-directory server-response))) 
+	       (message "%S len=%d" v (length v)))
+	     (insert (string-trim (alist-get 'program-directory server-response)))
+             (insert (alist-get 'modified-page-source server-response))
+	     (goto-char start))
+           (apply orig charset url args))))))
 
 (defun simpleweb--display-html-advice (orig charset url &rest args)
-  (let ((target-buffer (current-buffer))
-        (start (point)))
-    (simpleweb--simplify-html-page-scripting
-     url
-     (lambda (server-response)
-       (with-current-buffer target-buffer
-         (when (alist-get 'modified-page-source server-response)
-           (delete-region start (point-max))
-           (goto-char start)
-	   (let ((v (alist-get 'program-directory server-response))) 
-	       (message "%S len=%d" v (length v)))
-	   (insert (string-trim (alist-get 'program-directory server-response)))
-           (insert (alist-get 'modified-page-source server-response))
-	   (goto-char start))
-         (apply orig charset url args))))))
+  (if simpleweb-is-disabled
+      (apply orig charset url args)
+    (apply #'simpleweb--display-html-advice-helper orig charset url args)))
 
 
+(defun simpleweb-simplify-page ()
+  (interactive)
+  (unless (derived-mode-p 'eww-mode) (user-error "Not in an eww buffer"))
+  (let ((inhibit-read-only t))
+    (goto-char (point-min))
+    (simpleweb--display-html-advice-helper #'eww-display-html 'utf-8 (eww-current-url)
+					   nil (point-min) (current-buffer))))
+  
 
 
 (defun simpleweb-initialize ()
