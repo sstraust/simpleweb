@@ -4,7 +4,7 @@
   :group 'simpleweb
   :type 'boolean)
 
-(defun simpleweb-disable ()
+(defun simpleweb-toggle-disabled ()
   (interactive)
   (setq simpleweb-is-disabled (not simpleweb-is-disabled)))
 
