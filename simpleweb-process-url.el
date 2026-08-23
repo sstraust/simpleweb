@@ -63,8 +63,7 @@
 
 (defun simpleweb-simplify-html-advice-hook (start end)
   "Simplify the contents of a webpage in the current buffer."
-  (if simpleweb-is-disabled
-      (apply orig charset url args)
+  (when (not simpleweb-is-disabled)
     (let* ((html-contents (buffer-substring (point-min) (point-max)))
 	   (active-buffer (current-buffer)))
       (simpleweb--simplify-html-page
