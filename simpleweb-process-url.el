@@ -123,33 +123,39 @@
     (apply #'simpleweb--display-html-advice-helper orig charset url args)))
 
 
+(defun simpleweb--get-simpleweb-jar-file ()
+  (let* ((simpleweb-curr-filepath (find-lisp-object-file-name #'simpleweb-simplify-html-advice-hook 'defun)))
+    (concat (file-name-directory simpleweb-curr-filepath)
+	    "simpleweb/target/simpleweb.jar")))
+(defun simpleweb--start-web-server ()
+  (start-process "simplify-web process" "*simplify-web-server*"
+		 "java" "-cp" (simpleweb--get-simpleweb-jar-file) "clojure.main" "-m" "simpleweb.core"))
+
+
 (defun simpleweb-simplify-page ()
   (interactive)
   (unless (derived-mode-p 'eww-mode) (user-error "Not in an eww buffer"))
-  (let ((inhibit-read-only t))
-    (goto-char (point-min))
-    (simpleweb--display-html-advice-helper #'eww-display-html 'utf-8 (eww-current-url)
-					   nil (point-min) (current-buffer))))
+  (if (not (get-buffer "*simplify-web-server*"))
+      (progn (simpleweb--start-web-server)
+	     (message "Starting simpleweb web server. It will take a moment to start up. RERUN THIS COMMAND in 10-15 seconds."))
+    (let ((inhibit-read-only t))
+      (goto-char (point-min))
+      (simpleweb--display-html-advice-helper #'eww-display-html 'utf-8 (eww-current-url)
+					     nil (point-min) (current-buffer)))))
   
+
+
 
 
 (defun simpleweb-initialize ()
   (interactive)
-  (let* ((simpleweb-curr-filepath (find-lisp-object-file-name #'simpleweb-simplify-html-advice-hook 'defun))
-	(simpleweb-jar-file (concat (file-name-directory simpleweb-curr-filepath)
-				    "simpleweb/target/simpleweb.jar")))
-    (start-process "simplify-web process" "*simplify-web-server*"
-		   "java" "-cp" simpleweb-jar-file "clojure.main" "-m" "simpleweb.core")
-    (advice-add 'eww--preprocess-html :after #'simpleweb-simplify-html-advice-hook)))
+  (simpleweb--start-web-server)
+  (advice-add 'eww--preprocess-html :after #'simpleweb-simplify-html-advice-hook))
 
 (defun simpleweb-initialize-program-generation ()
   (interactive)
-  (let* ((simpleweb-curr-filepath (find-lisp-object-file-name #'simpleweb-simplify-html-advice-hook 'defun))
-	(simpleweb-jar-file (concat (file-name-directory simpleweb-curr-filepath)
-				    "simpleweb/target/simpleweb.jar")))
-    (start-process "simplify-web process" "*simplify-web-server*"
-		   "java" "-cp" simpleweb-jar-file "clojure.main" "-m" "simpleweb.core")
-    (advice-add 'eww-display-html :around #'simpleweb--display-html-advice)))
+  (simpleweb--start-web-server)
+  (advice-add 'eww-display-html :around #'simpleweb--display-html-advice))
 
 
 
