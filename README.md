@@ -72,6 +72,8 @@ Add the following to your .emacs file:
 
 It takes a few seconds (10 or so) after emacs starts up before the server is ready.
 
+If you don't want to turn it on for every load, you can use the command ```simpleweb-simplify-page``` from inside a eww buffer insted.
+
 #### Debugging
 debugging: if things don't happen the way you expect them to
 check the ```*Messages*``` and the ```*simplify-web-server*``` buffer.
@@ -81,4 +83,5 @@ This is a new feature that's still a little unpolished, so feel free to reach ou
 
 
 ### Changelog
+- 8/23/26 add toggle for on-off, as well as command to one-shot run.
 - 8/12/26 add tooling for program generation
