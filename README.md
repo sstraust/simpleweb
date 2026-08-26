@@ -60,7 +60,7 @@ There's two ways you can use this library, and it works like this:
 - In *program generation mode* when you visit a new type of page, we generate a javascript *program* that does the simplification. Then, if you visit a similar page later, it'll used the cached program, rather than making a new LLM request.
 
 
-In general, program generation takes a long time initially, but is much faster in the long run. By default, we also run program generation in the background, so that it does not block your browsing experience (i.e. if no modifier program exists, we load the page as-normal, and then create a new modifier program in the background).
+In general, program generation takes a long time initially, but is much faster in the long run. By default, the process of generating programs runs in the background, so that it does not block your browsing experience (i.e. if no modifier program exists, we load the page as-normal, and then create a new modifier program in the background).
 
 Program generation relies on the browser's default sandboxing to run the LLM generated code.
 
@@ -72,7 +72,7 @@ In general, program generation mode is best when you visit the same kinds of sit
 - This uses a lot of tokens, at least initially, to generate the pages. It's recommended that you use a subscription plan or something with a reasonable cap if you turn on this feature.
 - This works by sending the full webpage text to an LLM, and does the modifications by injecting js into a firefox browser. It relies on browser sandboxing, which I am happy with, but I'd warn against using it with anything that contains logged-in information/secrets/etc.
 - It runs with the claude CLI, so make sure you're happy with calling the claude CLI. I plan to add more models/options in the future.
-- It takes a moment for the webserver to start up after you first open emacs. You may need to wait 10seconds after you first open emacs to be able to start browsing.
+- It takes a moment for the webserver to start up after you first open emacs. You may need to wait 10 seconds after you first open emacs to be able to start browsing.
 
 Notes on program-generation mode:
 - Modifications do not take effect the first time you visit a new type of page. If there isn't a modifier already generated, we load the page as-normal, and then use a background queue to generate the modifier program. We do this because it takes a long time for the program to generate. The next time you visit the page after generation, the changes should take effect.
