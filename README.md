@@ -56,8 +56,8 @@ Add the following to your .emacs file:
 
 ### Program Generation Mode vs. A La Carte Mode
 There's two ways you can use this library, and it works like this:
-- In *a la carte mode*, when simplification is turned on, it sends the entire text of the webpage to an LLM, and asks it to generate the entire webpage in response.
-- In *program generation mode* when you visit a new type of page, we generate a javascript program that transforms the current page into a simplified version of itself. Then, if you visit a similar page later, it'll used the cached program, rather than making a new LLM request.
+- In *a la carte mode*, it sends the entire text of the webpage to an LLM, and asks it to generate the entire webpage in response.
+- In *program generation mode* when you visit a new type of page, we generate a javascript *program* that does the simplification. Then, if you visit a similar page later, it'll used the cached program, rather than making a new LLM request.
 
 
 In general, program generation takes a long time initially, but is much faster in the long run. By default, we also run program generation in the background, so that it does not block your browsing experience (i.e. if no modifier program exists, we load the page as-normal, and then create a new modifier program in the background).
