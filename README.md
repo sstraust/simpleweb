@@ -89,7 +89,7 @@ If you don't want to turn it on for every load, you can use the command ```simpl
 #### simpleweb-simplify-page
 If you don't want to turn this on for every request, you can call ```simpleweb-simplify-page```, to load the simplification for only one specific webpage.
 
-By default, this uses program-generation, if it is already generated, and if not, it returns the original page, and kicks of program-generation in the background.
+By default, this uses program-generation, if it is already generated, and if not, it returns the original page, and kicks off program-generation in the background.
 
 #### simpleweb-clear-program
 Delete the program used to modify this page.
