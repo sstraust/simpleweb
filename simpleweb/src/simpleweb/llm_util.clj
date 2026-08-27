@@ -6,7 +6,7 @@
 (defmulti llm-chat (fn [prompt & options] @curr-llm-model))
 
 (defmethod llm-chat ::claude-cli
-  [prompt]
+  [prompt & options]
   (let [{:keys [exit out err]}
         (shell/sh (System/getenv "CLAUDE_CLI_PATH") "-p"
                   "--model" "opus"
@@ -24,5 +24,5 @@
   (delay (requiring-resolve 'simpleweb.gemini-chat/llm-chat-gemini)))
 
 (defmethod llm-chat ::gemini
-  [prompt & options]
+  [prompt & {:as options}]
   (@llm-chat-gemini prompt options))

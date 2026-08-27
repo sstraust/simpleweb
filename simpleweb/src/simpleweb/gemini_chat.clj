@@ -4,7 +4,7 @@
 
 (require-python '[google.generativeai :as genai])
 (genai/configure  :api_key (System/getenv "GEMINI_API_KEY"))
-(def ^:private gemini-model (genai/GenerativeModel "models/gemini-2.7-flash"))
+(def ^:private gemini-model (genai/GenerativeModel "models/gemini-3.7-flash"))
 
 
 (defn llm-chat-gemini

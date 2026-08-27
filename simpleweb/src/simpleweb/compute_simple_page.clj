@@ -8,7 +8,7 @@
 
 (genai/configure  :api_key (System/getenv "GEMINI_API_KEY"))
 
-(def ^:private gemini-model (genai/GenerativeModel "models/gemini-1.5-pro-latest"))
+(def ^:private gemini-model (genai/GenerativeModel "models/gemini-3.1-pro-preview"))
 
 
 (defn- simplify-page-prompt []

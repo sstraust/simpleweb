@@ -21,6 +21,8 @@ git clone https://github.com/sstraust/simpleweb.git
 #### Make sure Claude CLI is available, and set the CLI path
 (setenv "CLAUDE_CLI_PATH" "path to your claude")
 
+you will also need to install firefox and [geckodriver](https://github.com/mozilla/geckodriver/releases)
+
 #### Turn on the Library
 Add the following to your .emacs file:
 ```
