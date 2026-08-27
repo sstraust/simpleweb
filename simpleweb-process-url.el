@@ -88,7 +88,8 @@
 	       (delete-region start end)
 	       (insert simplified-html)))))))))
 
-
+(defvar simpleweb--last-used-matcher-program nil)
+(defvar simpleweb--last-used-matcher-program-url nil)
 (defun simpleweb--simplify-html-page-scripting (url callback)
   "Simplify the contents of a webpage. This BLOCKS until the simplification returns.
 
@@ -109,7 +110,30 @@
     :success (cl-function
 	      (lambda (&key data &allow-other-keys)
 		(when data
+		  (setq simpleweb--last-used-matcher-program (alist-get 'program-directory data))
+		  (setq simpleweb--last-used-matcher-program-url url)
 		  (funcall callback data))))))
+
+(defun simpleweb-clear-program ()
+  (interactive)
+  (if (not (and
+	    simpleweb--last-used-matcher-program-url
+	    (string-equal (eww-current-url) simpleweb--last-used-matcher-program-url)
+	    simpleweb--last-used-matcher-program
+	    ;; TODO modify this when the path bbecomes configurable
+	    (string-search "simpleweb/generated_programs" simpleweb--last-used-matcher-program)))
+      (error "current url does not correspond to the most recently accessed matcher program")
+    (let* ((dir (expand-file-name simpleweb--last-used-matcher-program))
+	   (contents (directory-files dir nil directory-files-no-dot-files-regexp)))
+      (if (or (not (seq-set-equal-p '("matcher.js" "modifier.js") contents))
+	      (not (seq-every-p (lambda (filename)
+				  (file-regular-p (expand-file-name filename dir)))
+				contents)))
+	  (error "directory must contain only the matcher and modifier program files.")
+	(delete-directory dir t)))))
+	
+	  
+	 
 
 
 (defun simpleweb--display-html-advice-helper (simplify-page-function orig charset url &rest args)
