@@ -27,6 +27,7 @@ you will also need to install firefox and [geckodriver](https://github.com/mozil
 Add the following to your .emacs file:
 ```
 (add-to-list 'load-path "~/.emacs.d/simpleweb")
+(require 'simpleweb-process-url)
 (simpleweb-initialize-program-generation)
 ```
 
@@ -52,6 +53,7 @@ to your .emacs file
 Add the following to your .emacs file:
 ```
 (add-to-list 'load-path "~/.emacs.d/simpleweb")
+(require 'simpleweb-process-url)
 (simpleweb-initialize)
 ```
 
