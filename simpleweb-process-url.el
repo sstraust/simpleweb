@@ -68,7 +68,8 @@
 
 (defun simpleweb--simplify-html-page-from-url (url callback)
   (simpleweb--simplify-html-page
-   (buffer-substring-no-properties (point-min) (point-max))
+   (or (plist-get eww-data :source)
+       (buffer-substring-no-properties (point-min) (point-max)))
    callback))
 
 
