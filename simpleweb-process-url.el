@@ -4,6 +4,14 @@
   :group 'simpleweb
   :type 'boolean)
 
+;; TODO revert from test
+(defcustom simpleweb-generated-programs-dir "./"
+  "The path prefix, under which to store simpleweb generated programs"
+  :group 'simpleweb
+  :type 'string)
+  
+  
+
 (defun simpleweb-toggle-disabled ()
   (interactive)
   (setq simpleweb-is-disabled (not simpleweb-is-disabled)))
@@ -166,7 +174,8 @@
 	    "simpleweb/target/simpleweb.jar")))
 (defun simpleweb--start-web-server ()
   (start-process "simplify-web process" "*simplify-web-server*"
-		 "java" "-cp" (simpleweb--get-simpleweb-jar-file) "clojure.main" "-m" "simpleweb.core"))
+		 "java" "-cp" (simpleweb--get-simpleweb-jar-file) "clojure.main" "-m" "simpleweb.core"
+		 (expand-file-name simpleweb-generated-programs-dir)))
 
 (defun simpleweb-verify-eww-buffer ()
   (unless (derived-mode-p 'eww-mode) (user-error "Not in an eww buffer")))

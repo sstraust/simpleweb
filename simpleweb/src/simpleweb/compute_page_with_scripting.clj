@@ -11,7 +11,11 @@
 (def background-driver (delay (et/firefox)))
 (def background-generate-modifier-queue (chan (sliding-buffer 10)))
 
-(def generated-programs-base-dir "simpleweb/generated_programs")
+;; I think I just set the value on startup
+;; and then ideally re-implement in emacs-lisp at a later date
+(def generated-programs-subpath "simpleweb/generated_programs")
+(def generated-programs-base-dir (atom ""))
+
 
 (defn use-background-queue [] true)
 
@@ -68,7 +72,8 @@ Detailed instructions:
   (sanitize-to-filename (.getHost (java.net.URI. url))))
 
 (defn- top-level-path [url]
-  (io/file generated-programs-base-dir (sanitized-top-level-domain url)))
+  (io/file @generated-programs-base-dir
+           generated-programs-subpath (sanitized-top-level-domain url)))
 
 (defn- truncate [s size]
   (subs s 0 (min size (count s))))

@@ -63,7 +63,9 @@
                        :headerBufferSize 1048576}))
   (println "running server on port " (str port)))
 
-(defn -main []
+(defn -main [file-path]
+  (reset! compute-page-with-scripting/generated-programs-base-dir
+          file-path)
   (run-web-server))
 
 ;; (run-web-server)
