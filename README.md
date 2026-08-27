@@ -79,6 +79,8 @@ Notes on program-generation mode:
 - This spins up 2 firefox drivers, 1 for live browsing, and 1 for program generation. You can look at them to see what they are doing, but if you close them it will mess things up.
 - Each generated program lives in simpleweb/generated_programs. If there's something you don't like, you can always delete it and regenerate it. It's sometimes worth iterating a few times for sites you frequently visit.
 
+If you don't want to turn it on for every load, you can use the command ```simpleweb-simplify-page``` from inside a eww buffer insted.
+
 #### Debugging
 debugging: if things don't happen the way you expect them to
 check the ```*Messages*``` and the ```*simplify-web-server*``` buffer.
@@ -88,4 +90,5 @@ This is a new feature that's still a little unpolished, so feel free to reach ou
 
 
 ### Changelog
+- 8/23/26 add toggle for on-off, as well as command to one-shot run.
 - 8/12/26 add tooling for program generation

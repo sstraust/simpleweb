@@ -1,15 +1,9 @@
 (ns simpleweb.llm-util
-  (:require [libpython-clj2.python :as py]
-            [libpython-clj2.require :refer [require-python]]
-            [clojure.java.shell :as shell]))
+  (:require [clojure.java.shell :as shell]))
 
 (def curr-llm-model (atom ::claude-cli))
 
-(require-python '[google.generativeai :as genai])
-(genai/configure  :api_key (System/getenv "GEMINI_API_KEY"))
-(def ^:private gemini-model (genai/GenerativeModel "models/gemini-3.1-pro-preview"))
-
-(defmulti llm-chat (fn [& args] @curr-llm-model))
+(defmulti llm-chat (fn [prompt & options] @curr-llm-model))
 
 (defmethod llm-chat ::claude-cli
   [prompt]
@@ -25,8 +19,10 @@
       out         
       (throw (ex-info (str "claude failed: " err) {:exit exit})))))
 
+
+(def llm-chat-gemini
+  (delay (requiring-resolve 'simpleweb.gemini-chat/llm-chat-gemini)))
+
 (defmethod llm-chat ::gemini
-  [prompt]
-  (let [model-output (py/py. gemini-model generate_content
-                             [prompt])]
-    (py/py.- model-output text)))
+  [prompt & options]
+  (@llm-chat-gemini prompt options))

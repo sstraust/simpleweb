@@ -3,7 +3,6 @@
             [ring.adapter.jetty :as ring]
             [ring.middleware.keyword-params :refer [wrap-keyword-params]]
             [ring.middleware.params :only [wrap-params] :refer [wrap-params]]
-            [simpleweb.compute-simple-page :as compute-simple-page]
             [simpleweb.compute-page-with-scripting :as compute-page-with-scripting]
             [clojure.data.json :as json])
   (:gen-class))
@@ -16,12 +15,13 @@
 
 
 
-
+(def compute-simple-page-simplify
+  (delay (requiring-resolve 'simpleweb.compute-simple-page/simplify-page-contents)))
 
 (defn- simplify-page-contents [{{:keys [contents]} :params}]
   (try 
     (println "recieved request with content: " (count contents))
-    (let [output (compute-simple-page/simplify-page-contents contents)]
+    (let [output (@compute-simple-page-simplify contents)]
       ;; (println output)
       output)
     (catch Exception e
