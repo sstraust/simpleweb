@@ -1,14 +1,16 @@
 (ns simpleweb.compute-simple-page
-  (:require [libpython-clj2.python :as py]
-            [taoensso.tufte :as tufte :refer (p profile)]
-            [libpython-clj2.require :refer [require-python]]))
+  (:require
+   [clojure.java.io :as io]
+   [libpython-clj2.python :as py]
+   [libpython-clj2.require :refer [require-python]]
+   [taoensso.tufte :as tufte :refer (p profile)]))
 
 ;; (require-python 'openai)
 (require-python '[google.generativeai :as genai])
 
 (genai/configure  :api_key (System/getenv "GEMINI_API_KEY"))
 
-(def ^:private gemini-model (genai/GenerativeModel "models/gemini-1.5-pro-latest"))
+(def ^:private gemini-model (genai/GenerativeModel "models/gemini-3.1-pro-preview"))
 
 
 (defn- simplify-page-prompt []
@@ -24,6 +26,7 @@
   (profile
    {}
    (let [temp-file-name (rand-file-name)
+         _ (io/make-parents temp-file-name)
          _ (spit temp-file-name  page-source)
          gemini-file (p :upload-file
                         (genai/upload_file
