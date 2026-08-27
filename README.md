@@ -91,12 +91,12 @@ If you don't want to turn this on for every request, you can call ```simpleweb-s
 
 By default, this uses program-generation, if it is already generated, and if not, it returns the original page, and kicks of program-generation in the background.
 
-#### simpleweb-simplify-clear-program
+#### simpleweb-clear-program
 Delete the program used to modify this page.
 
 
-#### simpleweb-modifier-program-directories
-Customizable var. A list of directories to use when running in program generation mode.
+#### simpleweb-generated-programs-dir
+Customizable var. The directory to use to store the generated programs.
 
 
 
