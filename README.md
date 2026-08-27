@@ -85,6 +85,21 @@ Notes on program-generation mode:
 
 If you don't want to turn it on for every load, you can use the command ```simpleweb-simplify-page``` from inside a eww buffer insted.
 
+### Additional Commands and Configuration
+#### simpleweb-simplify-page
+If you don't want to turn this on for every request, you can call ```simpleweb-simplify-page```, to load the simplification for only one specific webpage.
+
+By default, this uses program-generation, if it is already generated, and if not, it returns the original page, and kicks of program-generation in the background.
+
+#### simpleweb-simplify-clear-program
+Delete the program used to modify this page.
+
+
+#### simpleweb-modifier-program-directories
+Customizable var. A list of directories to use when running in program generation mode.
+
+
+
 #### Debugging
 debugging: if things don't happen the way you expect them to
 check the ```*Messages*``` and the ```*simplify-web-server*``` buffer.
