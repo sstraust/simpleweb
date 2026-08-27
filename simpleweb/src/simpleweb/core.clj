@@ -23,7 +23,7 @@
     (println "recieved request with content: " (count contents))
     (let [output (@compute-simple-page-simplify contents)]
       ;; (println output)
-      output)
+      (json/write-str {:modified-page-source output}))
     (catch Exception e
       (println "error!!: " e)
       {:status 500

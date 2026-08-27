@@ -55,7 +55,12 @@
     :data (list (cons "contents" html-contents))
     :sync t
     :type "POST"
-    :parser 'buffer-string
+    :parser (lambda ()
+	      (json-parse-buffer :object-type 'alist
+				 :array-type 'list
+				 :null-object nil
+				 :false-object nil))
+    :timeout 600
     :success (cl-function
 	      (lambda (&key data &allow-other-keys)
 		(when data
@@ -68,12 +73,13 @@
 	   (active-buffer (current-buffer)))
       (simpleweb--simplify-html-page
        html-contents
-       (lambda (simplified-html)
+       (lambda (data)
 	 (with-current-buffer active-buffer
-	   (save-excursion 
-	     (goto-char start)
-	     (delete-region start end)
-	     (insert simplified-html))))))))
+	   (let ((simplified-html (alist-get 'modified-page-source server-response)))
+	     (save-excursion 
+	       (goto-char start)
+	       (delete-region start end)
+	       (insert simplified-html)))))))))
 
 
 (defun simpleweb--simplify-html-page-scripting (url callback)
@@ -99,10 +105,10 @@
 		  (funcall callback data))))))
 
 
-(defun simpleweb--display-html-advice-helper (orig charset url &rest args)
+(defun simpleweb--display-html-advice-helper (simplify-page-function orig charset url &rest args)
   (let ((target-buffer (current-buffer))
           (start (point)))
-      (simpleweb--simplify-html-page-scripting
+      (funcall simplify-page-function
        url
        (lambda (server-response)
 	 (with-current-buffer target-buffer
@@ -111,7 +117,8 @@
              (goto-char start)
 	     (let ((v (alist-get 'program-directory server-response))) 
 	       (message "%S len=%d" v (length v)))
-	     (insert (string-trim (alist-get 'program-directory server-response)))
+	     (when (alist-get 'program-directory server-response)
+	       (insert (string-trim (alist-get 'program-directory server-response))))
              (insert (alist-get 'modified-page-source server-response))
 	     (goto-char start))
            (apply orig charset url args))))))
@@ -119,7 +126,7 @@
 (defun simpleweb--display-html-advice (orig charset url &rest args)
   (if simpleweb-is-disabled
       (apply orig charset url args)
-    (apply #'simpleweb--display-html-advice-helper orig charset url args)))
+    (apply #'simpleweb--display-html-advice-helper #'simpleweb--simplify-html-page-scripting orig charset url args)))
 
 
 (defun simpleweb--get-simpleweb-jar-file ()
@@ -130,20 +137,28 @@
   (start-process "simplify-web process" "*simplify-web-server*"
 		 "java" "-cp" (simpleweb--get-simpleweb-jar-file) "clojure.main" "-m" "simpleweb.core"))
 
+(defun simpleweb-verify-eww-buffer ()
+  (unless (derived-mode-p 'eww-mode) (user-error "Not in an eww buffer")))
 
-(defun simpleweb-simplify-page ()
-  (interactive)
-  (unless (derived-mode-p 'eww-mode) (user-error "Not in an eww buffer"))
+(defun simpleweb--simplify-page-helper (simplification-method)
+  (simpleweb-verify-eww-buffer)
   (if (not (get-buffer "*simplify-web-server*"))
       (progn (simpleweb--start-web-server)
 	     (message "Starting simpleweb web server. It will take a moment to start up. RERUN THIS COMMAND in 10-15 seconds."))
     (let ((inhibit-read-only t))
       (goto-char (point-min))
-      (simpleweb--display-html-advice-helper #'eww-display-html 'utf-8 (eww-current-url)
+      (simpleweb--display-html-advice-helper simplification-method #'eww-display-html 'utf-8 (eww-current-url)
 					     nil (point-min) (current-buffer)))))
+
+(defun simpleweb-simplify-page ()
+  (interactive)
+  (simpleweb--simplify-page-helper #'simpleweb--simplify-html-page-scripting))
+
+
+(defun simpleweb-simplify-a-la-carte ()
+  (interactive)
+  (simpleweb--simplify-page-helper #'simpleweb--simplify-html-page))
   
-
-
 
 
 (defun simpleweb-initialize ()
