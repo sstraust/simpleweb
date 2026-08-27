@@ -12,7 +12,7 @@
 (def background-generate-modifier-queue (chan (sliding-buffer 10)))
 
 (def generated-programs-subpath "simpleweb/generated_programs")
-(def generated-programs-base-dir (atom ""))
+(def generated-programs-base-dir (atom "./"))
 
 
 (defn use-background-queue [] true)
