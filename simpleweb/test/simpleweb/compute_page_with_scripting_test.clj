@@ -35,7 +35,7 @@
   (testing "Test that I can write to disk, and then read it later"
     (let [example-url "https://www.reddit.com"]
       ;; TODO use a proper DI framework
-      (with-redefs [simpleweb.compute-page-with-scripting/generated-programs-base-dir test-data-dir
+      (with-redefs [simpleweb.compute-page-with-scripting/generated-programs-base-dir (atom test-data-dir)
                     simpleweb.compute-page-with-scripting/matcher-matches? (fn [& args] true)]
         (#'simpleweb.compute-page-with-scripting/write-matcher-program-to-disk
          example-url "test_matcher_program" "test_modifier_program")
