@@ -4,7 +4,6 @@
   :group 'simpleweb
   :type 'boolean)
 
-;; TODO revert from test
 (defcustom simpleweb-generated-programs-dir "./"
   "The path prefix, under which to store simpleweb generated programs"
   :group 'simpleweb

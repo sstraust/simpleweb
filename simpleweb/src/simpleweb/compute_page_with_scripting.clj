@@ -11,8 +11,6 @@
 (def background-driver (delay (et/firefox)))
 (def background-generate-modifier-queue (chan (sliding-buffer 10)))
 
-;; I think I just set the value on startup
-;; and then ideally re-implement in emacs-lisp at a later date
 (def generated-programs-subpath "simpleweb/generated_programs")
 (def generated-programs-base-dir (atom ""))
 
