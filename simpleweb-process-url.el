@@ -119,7 +119,9 @@
   (if (not (and
 	    simpleweb--last-used-matcher-program-url
 	    (string-equal (eww-current-url) simpleweb--last-used-matcher-program-url)
-	    simpleweb--last-used-matcher-program))
+	    simpleweb--last-used-matcher-program
+	    ;; TODO modify this when the path bbecomes configurable
+	    (string-search "simpleweb/generated_programs" simpleweb--last-used-matcher-program)))
       (error "current url does not correspond to the most recently accessed matcher program")
     (let* ((dir (expand-file-name simpleweb--last-used-matcher-program))
 	   (contents (directory-files dir nil directory-files-no-dot-files-regexp)))
