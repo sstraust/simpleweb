@@ -66,6 +66,12 @@
 		(when data
 		  (funcall callback data))))))
 
+(defun simpleweb--simplify-html-page-from-url (url callback)
+  (simpleweb--simplify-html-page
+   (buffer-substring-no-properties (point-min) (point-max))
+   callback))
+
+
 (defun simpleweb-simplify-html-advice-hook (start end)
   "Simplify the contents of a webpage in the current buffer."
   (when (not simpleweb-is-disabled)
@@ -73,7 +79,7 @@
 	   (active-buffer (current-buffer)))
       (simpleweb--simplify-html-page
        html-contents
-       (lambda (data)
+       (lambda (server-response)
 	 (with-current-buffer active-buffer
 	   (let ((simplified-html (alist-get 'modified-page-source server-response)))
 	     (save-excursion 
@@ -157,7 +163,7 @@
 
 (defun simpleweb-simplify-a-la-carte ()
   (interactive)
-  (simpleweb--simplify-page-helper #'simpleweb--simplify-html-page))
+  (simpleweb--simplify-page-helper #'simpleweb--simplify-html-page-from-url))
   
 
 
