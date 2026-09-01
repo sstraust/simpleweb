@@ -155,9 +155,11 @@
              (goto-char start)
 	     (let ((v (alist-get 'program-directory server-response))) 
 	       (message "%S len=%d" v (length v)))
-	     (when (alist-get 'program-directory server-response)
-	       (insert (string-trim (alist-get 'program-directory server-response))))
-             (insert (alist-get 'modified-page-source server-response))
+	     ;; Insert bytes encoded with the CHARSET eww will decode with.
+	     (let ((coding (or charset 'utf-8)))
+	       (when (alist-get 'program-directory server-response)
+		 (insert (encode-coding-string (string-trim (alist-get 'program-directory server-response)) coding)))
+	       (insert (encode-coding-string (alist-get 'modified-page-source server-response) coding)))
 	     (goto-char start))
            (apply orig charset url args))))))
 
